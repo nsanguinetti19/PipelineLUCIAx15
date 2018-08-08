@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Delete KB') {
+			environment {
+				GXPROGRAMDIR = credentials('GXPROGRAMDIR')
+				KBDIR =  credentials('LUCIA15KBDIR')
+			}
+            steps {
+                echo '----- Deleting KB -----'
+				build job:'DeleteKB', parameters: [text(name: 'KBDir', value: "${KBDIR}"), text(name: 'IntegratedSecurity', value: "true"), text(name: 'GXPROGRAMDIR', value: "${GXPROGRAMDIR}")]
+			}
+        }
+		stage('Create KB') {
+			environment {
+				GXPROGRAMDIR = credentials('GXPROGRAMDIR')
+				SERVERUSER = credentials('LUCIASERVERUSER')
+				SERVERPASS = credentials('LUCIASERVERPASS')
+				KBDIR = credentials('LUCIA15KBDIR')
+				SERVERURL = credentials('LUCIA15SERVERURL')
+				KBName = "LUCIAx"
+				SetPropertiesFile = credentials('LUCIA15SETKBPROPERTIES')
+			}
+            steps {
+                echo '----- Creating KB -----'
+				build job:'CreateKB', parameters: [text(name: 'GXPROGRAMDIR', value: "${GXPROGRAMDIR}"), text(name: 'ServerUserName', value: "${SERVERUSER}"), text(name: 'ServerPassword', value: "${SERVERPASS}"), text(name: 'KBDir', value: "${KBDIR}"), text(name: 'IntegratedSecurity', value: "true"), text(name: 'ServerURL', value: "${SERVERURL}"), text(name: 'KBName', value: "${KBName}"), text(name: 'SetPropertiesFile', value: "${SetPropertiesFile}")]
+            }
+        }
+		stage('Build All') {
+			environment {
+				GXPROGRAMDIR = credentials('GXPROGRAMDIR')
+				SERVERUSER = credentials('LUCIASERVERUSER')
+				SERVERPASS = credentials('LUCIASERVERPASS')
+				KBDIR = credentials('LUCIA15KBDIR')
+			}
+            steps {
+                echo '----- Building -----'
+				build job:'Build', parameters: [text(name: 'GXPROGRAMDIR', value: "${GXPROGRAMDIR}"),text(name: 'SERVERUSER', value: "${SERVERUSER}"),text(name: 'SERVERPASS', value: "${SERVERPASS}"),text(name: 'KBDIR', value: "${KBDIR}"),text(name: 'KBVERSION', value: "MT15")]
+            }
+        }
+	}	
+}
